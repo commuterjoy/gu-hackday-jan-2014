@@ -4,15 +4,13 @@
 
 <xsl:output method="html"/>
 <xsl:template match="/">
-    <style>
-        .goals { color: #ccc; }
-        [class=~goals-] { background-color: #ccff33; color: #333; } /* 3+ goals */ 
-        .goals-1 { color: #33aa00; }
-        .goals-2 { color: #33dd00; }
-        .goals-3 { background-color: #ccff33; color: #333; }
-    </style>
-    <xsl:apply-templates/>
-    <hr/>
+    <h2 class="sub">Form</h2>
+
+    <p class="card">
+        He's scored <i><xsl:value-of select="count(//match[position() &lt; 5]/events/goals/goal)"/></i> goals
+        in the last five matches he's played and <i><xsl:value-of select="count(//match[position() &gt; 5 and position() &lt; 11]/events/goals/goal)"/></i> 
+        in the five before that. 
+    </p>
 </xsl:template>
 
 <!-- goals -->
@@ -22,8 +20,6 @@
             <xsl:value-of select="count(events/goals/goal)"/> goals
         </big>
         <xsl:text> </xsl:text>
-
-        <xsl:value-of select="events/substitution/substitution[playerOff/@playerID='325121']"/>
 
         <xsl:value-of select="@date"/>
         <xsl:text> </xsl:text>

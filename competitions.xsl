@@ -2,10 +2,6 @@
 
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-<!-- imports -->
-<xsl:import href="appearances.xsl"/>
-<xsl:import href="player.xsl"/>
-
 <xsl:output method="html"/>
 
 <!-- entry point -->
@@ -24,6 +20,21 @@
             <xsl:apply-templates />
         </body>
     </html>
+</xsl:template>
+
+<xsl:template match="seasons">
+    <ul>
+        <xsl:apply-templates />
+    </ul>
+</xsl:template>
+
+<xsl:template match="season">
+    <li>
+        <a href="/competitions/{@competitionID}/stats">
+            <xsl:value-of select="@competitionID"/>
+            <xsl:value-of select="name"/>
+        </a>
+    </li>
 </xsl:template>
 
 </xsl:stylesheet>
