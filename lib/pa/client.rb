@@ -14,10 +14,11 @@ class Press
         @xsl_src = './views/xsl/'
         @tokens = { 
                 :matchID => 3695871,
-                :apiKey => 'dxj451p9',
                 :startDate => 20130702,
                 :endDate => 20140120,
-                :competitionID => 300
+                :competitionID => 300,
+                :host => @host,
+                :cache_root => @cache_root
         }.merge(tokens)
         @paths = paths.map { |path|
             @tokens.each { |key, value|
@@ -54,8 +55,8 @@ class Press
     def transform(xsl, opts={:params=>{}})
         out = "#{self.key}.out"
         params = opts[:params].map { |key, value|
-            [key, value]
-        }.join('=')
+            "%s'%s'" % [key, value]
+        }.merge(@tokens).join('=')
         puts "java -jar vendor/saxon9he.jar -o #{out} #{params} #{self.key} #{@xsl_src + xsl}"
         `java -jar vendor/saxon9he.jar -o "#{out}" "#{self.key}" #{@xsl_src + xsl} #{params}`
         File.open(out, 'r') { |f| f.read }

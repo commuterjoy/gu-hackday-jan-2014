@@ -5,6 +5,8 @@ require 'fileutils'
 require 'base64'
 require './lib/pa/client.rb'
 
+apiKey = IO.read('api-key').strip
+
 get '/' do
     erb :index
 end
@@ -18,7 +20,10 @@ get '/players/:id' do
         '/api/football/player/events/{apiKey}/{playerID}/{startDate}/{endDate}'
     ]
     id = params[:id]
-    Press.new(urls, { :playerID => id }).get().cache().transform('foo.xsl', { :params => { :player => id } })
+    Press.new(urls, { 
+        :playerID => id,
+        :apiKey => apiKey
+    }).get().cache().transform('foo.xsl', { :params => { :player => id } })
 end
 
 get '/competitions/:id/stats' do
@@ -26,7 +31,9 @@ get '/competitions/:id/stats' do
         '/api/football/competition/stats/summary/{apiKey}/'+params[:id]+'/20130701/20140131',
         '/api/football/competition/eaindexfull/{apiKey}/'+params[:id]+'/{startDate}/{endDate}'
     ]
-    Press.new(urls).get().cache().transform('competitions.stats.xsl') 
+    Press.new(urls, {
+        :apiKey => apiKey
+    }).get().cache().transform('competitions.stats.xsl') 
 end
 
 
@@ -34,10 +41,14 @@ get '/competitions' do
     urls = [
         '/api/football/competitions/{apiKey}'
     ]
-    Press.new(urls).get().cache().transform('competitions.xsl') 
+    Press.new(urls, {
+        :apiKey => apiKey
+    }).get().cache().transform('competitions.xsl') 
 end
 
 get '/*' do
     path = '/' + params[:splat].first
-    Press.new([path]).get().cache().transform(params[:xsl]) 
+    Press.new([path], {
+        :apiKey => apiKey
+    }).get().cache().transform(params[:xsl]) 
 end
