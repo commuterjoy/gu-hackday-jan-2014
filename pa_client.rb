@@ -2,35 +2,49 @@
 require 'rest_client'
 require 'fileutils'
 require 'base64'
+require 'nokogiri'
 
 class Press
     
-    attr_accessors = :tokens, :host, :cache_root, :cache_path, :path
+    attr_accessors = :tokens, :host, :cache_root, :cache_path, :paths, :xml
 
-    def initialize(path)
-        @host = 'http://pads6.pa-sport.com/'
-        @cache_root = '/tmp/'
-        @path = path
-        { 
+    def initialize(paths, tokens = {})
+        @host = 'http://pads6.pa-sport.com'
+        @cache_root = '/tmp/' 
+        @tokens = { 
                 :matchID => 3695871,
                 :apiKey => 'dxj451p9',
-                :startDate => 20130701,
+                :startDate => 20130702,
                 :endDate => 20140120,
                 :competitionID => 300
-        }.each { |key, value|
-            @path.gsub!(/{#{key}}/, value.to_s)
+        }.merge(tokens)
+        @paths = paths.map { |path|
+            @tokens.each { |key, value|
+                path.gsub!(/{#{key}}/, value.to_s)
+            }
+            path
         }
     end
 
     def key
-        @cache_root + Base64.encode64(@path).strip
+        @cache_root + Base64.encode64(@paths.first).strip
     end
 
+    def cache
+        File.open(self.key, 'w') { |f| f.write("<pa>#{@xml.join}</pa>") }
+        self
+    end
+
+    # merges n xml files together
     def get
-        RestClient.get(@host + @path) { |response, request, result|
-            if (response.code == 200)
-                File.open(self.key, 'w') { |f| f.write(response.body) }
-            end
+        @xml = @paths.map { |path|
+            puts "GET\t#{@host + path}"
+            RestClient.get(@host + path) { |response, request, result|
+                puts "RESPONSE #{response.code}"
+                response.body
+            }
+        }.map { |response|
+            Nokogiri::XML(response).xpath("/*").to_s
         }
         self
     end
@@ -47,5 +61,14 @@ class Press
     
 end
 
-#puts Press.new('/api/football/competition/fixtures/dxj451p9/100').get().transform('events.xsl', { :params => { :foo => 1} })
+# rspec :)
+#
+pa = [
+    '/api/football/competition/fixtures/dxj451p9/100',
+    '/api/football/competition/fixtures/dxj451p9/300',
+    '/api/football/competition/fixtures/dxj451p9/101',
+]
 
+#puts Press.new(pa).get().inspect
+
+#:.transform('events.xsl', { :params => { :foo => 1 }})

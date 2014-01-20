@@ -5,52 +5,39 @@ require 'fileutils'
 require 'base64'
 require './pa_client.rb'
 
+get '/' do
+    erb :index
+end
 
 get '/favicon.ico' do
 end
 
-get '/player/:id' do
-
-    player = [
-        {
-            :name => 'appearances',
-            :uri => '/api/football/player/appearances/{apiKey}/{playerID}/{startDate}/{endDate}'
-        },
-        {
-            :name => 'events',
-            :uri => '/api/football/player/events/{apiKey}/{playerID}/{startDate}/{endDate}'
-        },
-        {
-            :name => 'stats',
-            :uri => '/api/football/player/stats/summary/{apiKey}/{playerID}/{startDate}/{endDate}'
-        }
+get '/players/:id' do
+    urls = [
+        '/api/football/player/appearances/{apiKey}/{playerID}/{startDate}/{endDate}',
+        '/api/football/player/events/{apiKey}/{playerID}/{startDate}/{endDate}'
     ]
-    
     id = params[:id]
-    player.map { |k|
-        tokens.merge({:playerID => id}).each { |key, value|
-            k[:uri].gsub!(/{#{key}}/, value.to_s)
-        }
-    }
-    
-    player.each { |k|
-        xmlFile = "/tmp/#{key(k[:uri])}"
-        stash(xmlFile, k[:uri])
-        k[:xmlFile] = xmlFile
-    }
+    Press.new(urls, { :playerID => id }).get().cache().transform('foo.xsl', { :params => { :player => id } })
+end
 
-    merged = ''
-    player.each { |k| 
-        merged += transform(k[:xmlFile], k[:name] + '.xsl', { :params => { :playerId => id } })
-    }
+get '/competitions/:id/stats' do
+    urls = [
+        '/api/football/competition/stats/summary/{apiKey}/'+params[:id]+'/20130701/20140131',
+        '/api/football/competition/eaindexfull/{apiKey}/'+params[:id]+'/{startDate}/{endDate}'
+    ]
+    Press.new(urls).get().cache().transform('competitions.stats.xsl') 
+end
 
-    merged
 
+get '/competitions' do
+    urls = [
+        '/api/football/competitions/{apiKey}'
+    ]
+    Press.new(urls).get().cache().transform('competitions.xsl') 
 end
 
 get '/*' do
-    path = params[:splat].first
-    Press.new(path).get().transform(params[:xsl])
-    
+    path = '/' + params[:splat].first
+    Press.new([path]).get().cache().transform(params[:xsl]) 
 end
-
