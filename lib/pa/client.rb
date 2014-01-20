@@ -6,11 +6,12 @@ require 'nokogiri'
 
 class Press
     
-    attr_accessors = :tokens, :host, :cache_root, :cache_path, :paths, :xml
+    attr_accessors = :tokens, :host, :cache_root, :cache_path, :paths, :xml, :xsl_src
 
     def initialize(paths, tokens = {})
         @host = 'http://pads6.pa-sport.com'
-        @cache_root = '/tmp/' 
+        @cache_root = './target/'
+        @xsl_src = './views/xsl/'
         @tokens = { 
                 :matchID => 3695871,
                 :apiKey => 'dxj451p9',
@@ -35,7 +36,7 @@ class Press
         self
     end
 
-    # merges n xml files together
+    # get and merge n xml files together
     def get
         @xml = @paths.map { |path|
             puts "GET\t#{@host + path}"
@@ -49,13 +50,14 @@ class Press
         self
     end
 
+    # xsl transformer
     def transform(xsl, opts={:params=>{}})
         out = "#{self.key}.out"
         params = opts[:params].map { |key, value|
             [key, value]
         }.join('=')
-        puts "java -jar vendor/saxon9he.jar -o #{out} #{params} #{self.key} #{xsl}"
-        `java -jar vendor/saxon9he.jar -o "#{out}" "#{self.key}" #{xsl} #{params}`
+        puts "java -jar vendor/saxon9he.jar -o #{out} #{params} #{self.key} #{@xsl_src + xsl}"
+        `java -jar vendor/saxon9he.jar -o "#{out}" "#{self.key}" #{@xsl_src + xsl} #{params}`
         File.open(out, 'r') { |f| f.read }
     end
     
