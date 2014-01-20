@@ -3,7 +3,7 @@ require 'rest_client'
 require 'sinatra'
 require 'fileutils'
 require 'base64'
-require './pa_client.rb'
+require './lib/pa/client.rb'
 
 get '/' do
     erb :index

@@ -54,8 +54,8 @@ class Press
         params = opts[:params].map { |key, value|
             [key, value]
         }.join('=')
-        puts "java -jar lib/saxon9he.jar -o #{out} #{params} #{self.key} #{xsl}"
-        `java -jar lib/saxon9he.jar -o "#{out}" "#{self.key}" #{xsl} #{params}`
+        puts "java -jar vendor/saxon9he.jar -o #{out} #{params} #{self.key} #{xsl}"
+        `java -jar vendor/saxon9he.jar -o "#{out}" "#{self.key}" #{xsl} #{params}`
         File.open(out, 'r') { |f| f.read }
     end
     
@@ -63,12 +63,12 @@ end
 
 # rspec :)
 #
-pa = [
-    '/api/football/competition/fixtures/dxj451p9/100',
-    '/api/football/competition/fixtures/dxj451p9/300',
-    '/api/football/competition/fixtures/dxj451p9/101',
-]
-
+# pa = [
+#   '/api/football/competition/fixtures/dxj451p9/100',
+#    '/api/football/competition/fixtures/dxj451p9/300',
+#    '/api/football/competition/fixtures/dxj451p9/101',
+#]
+#
 #puts Press.new(pa).get().inspect
-
+#
 #:.transform('events.xsl', { :params => { :foo => 1 }})
