@@ -55,10 +55,10 @@ class Press
     def transform(xsl, opts={:params=>{}})
         out = "#{self.key}.out"
         params = opts[:params].merge(@tokens).map { |key, value|
-            [key, value]
-        }.join('=')
+            "#{key}=#{value}" % [key, value]
+        }.join(' ')
         puts "java -jar vendor/saxon9he.jar -o #{out} #{params} #{self.key} #{@xsl_src + xsl}"
-        `java -jar vendor/saxon9he.jar -o "#{out}" "#{self.key}" #{@xsl_src + xsl} #{params}`
+        `java -jar vendor/saxon9he.jar -o:"#{out}" -s:"#{self.key}" -xsl:#{@xsl_src + xsl} #{params}`
         File.open(out, 'r') { |f| f.read }
     end
     
