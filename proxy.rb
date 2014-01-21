@@ -5,6 +5,7 @@ require 'fileutils'
 require 'base64'
 require './lib/pa/client.rb'
 
+# read the api-key from a local configuration file
 apiKey = IO.read('api-key').strip
 
 get '/' do
@@ -15,40 +16,53 @@ get '/favicon.ico' do
 end
 
 get '/players/:id' do
-    urls = [
+    id = params[:id]
+    Press.new([
         '/api/football/player/appearances/{apiKey}/{playerID}/{startDate}/{endDate}',
         '/api/football/player/events/{apiKey}/{playerID}/{startDate}/{endDate}'
-    ]
-    id = params[:id]
-    Press.new(urls, { 
+    ], { 
         :playerID => id,
         :apiKey => apiKey
-    }).get().cache().transform('foo.xsl', { :params => { :player => id } })
+    }).get().cache().transform('base.xsl', { :params => { :player => id } })
 end
 
 get '/competitions/:id/stats' do
-    urls = [
+    Press.new([
         '/api/football/competition/stats/summary/{apiKey}/'+params[:id]+'/20130701/20140131',
         '/api/football/competition/eaindexfull/{apiKey}/'+params[:id]+'/{startDate}/{endDate}'
-    ]
-    Press.new(urls, {
+    ], {
         :apiKey => apiKey
     }).get().cache().transform('competitions.stats.xsl') 
 end
 
+get '/competitions/:id/results' do
+    Press.new([
+        '/api/football/competition/results/{apiKey}/' + params[:id]
+    ], {
+        :apiKey => apiKey
+    }).get().cache().transform('results.xsl') 
+end
 
 get '/competitions' do
-    urls = [
+    Press.new([
         '/api/football/competitions/{apiKey}'
-    ]
-    Press.new(urls, {
+    ], {
         :apiKey => apiKey
     }).get().cache().transform('competitions.xsl') 
 end
 
+get '/matches/:id' do
+    Press.new([
+        '/api/football/match/actions/{apiKey}/{params[:id]}'
+    ], {
+        :apiKey => apiKey
+    }).get().cache().transform('actions.xsl') 
+end
+
 get '/*' do
-    path = '/' + params[:splat].first
-    Press.new([path], {
+    Press.new([
+        '/' + params[:splat].first
+    ], {
         :apiKey => apiKey
     }).get().cache().transform(params[:xsl]) 
 end
